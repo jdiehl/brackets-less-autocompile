@@ -1,0 +1,8 @@
+{
+	"name": "jdiehl.less-autocompile.node",
+	"version": "1.0.0",
+	"description": "Node script for jdiehl.less-autocompile",
+	"dependencies": {
+		"less": "*"
+	}
+}
