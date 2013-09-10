@@ -2,6 +2,10 @@
 
 LESS AutoCompile is an extension for the code editor Brackets that adds automatic compilation of LESS files upon saving. LESS AutoCompile is installed from the Package Manager that is included in Brackets.
 
+# Acknowledgements
+
+Thanks to James Lawrence for enabling relative imports in less.
+
 ### License
 The MIT License (MIT)
 
