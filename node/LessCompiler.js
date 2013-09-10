@@ -6,27 +6,31 @@ maxerr: 50, node: true */
 	"use strict";
 	
 	var less = require("less");
+	var path = require("path");
 	var fs = require("fs");
 
 	// compile the given less file
 	function compile(lessFile, cssFile) {
-
+           var parser = new(less.Parser)({
+			filename: path.basename(lessFile),
+			paths: [path.dirname(lessFile)]
+		});
 		// read less input
 		fs.readFile(lessFile, function (err, data) {
 			if (err) {
 				console.error(err);
 				return;
 			}
-
-			// render less
-			less.render(data.toString(), function (err, css) {
+			
+			// parse less
+			parser.parse(data.toString(), function (err, tree) {
 				if (err) {
 					console.error(err);
 					return;
 				}
 
 				// write css output
-				fs.writeFile(cssFile, css, function (err) {
+				fs.writeFile(cssFile, tree.toCSS(), function (err) {
 					if (err) {
 						console.error(err);
 						return;
