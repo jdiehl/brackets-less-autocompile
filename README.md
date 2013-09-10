@@ -26,7 +26,9 @@ You can tell the extension to always compile a specific set of files in a projec
 
     { "less": [ "path/to/file1.less", "path/to/file2.less" ] }
 
-All file paths must be relative to the project's root folder.
+All file paths must be relative to the project's root folder. To disable less-autocompile for a project, specify an empty list of files:
+
+    { "less": [] }
 
 
 ### Acknowledgements

@@ -3,7 +3,7 @@
     "title": "LESS AutoCompile",
     "description": "Automatically compiles less files upon saving.",
     "homepage": "https://github.com/jdiehl/brackets-less-autocompile",
-    "version": "1.0.13",
+    "version": "1.1.0",
     "author": "Jonathan Diehl <jonathan.diehl@gmail.com>",
     "contributors": [
         "James Lawrence (https://github.com/jlaw90)",
@@ -14,6 +14,6 @@
     ],
     "license": "MIT",
     "engines": {
-        "brackets": ">=0.24.0"
+        "brackets": ">=0.31.0"
     }
 }

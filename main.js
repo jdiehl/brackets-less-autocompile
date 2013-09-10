@@ -1,19 +1,15 @@
 define(function (require, exports, module) {
 	"use strict";
 
-	var AppInit = brackets.getModule("utils/AppInit"),
-		ProjectManager = brackets.getModule("project/ProjectManager"),
+	var ProjectManager = brackets.getModule("project/ProjectManager"),
 		ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
 		NodeConnection = brackets.getModule("utils/NodeConnection"),
-		DocumentManager = brackets.getModule("document/DocumentManager"),
-		PanelManager = brackets.getModule("view/PanelManager"),
 		FileSystem = brackets.getModule("filesystem/FileSystem"),
 		FileUtils = brackets.getModule("file/FileUtils"),
 		PreferencesManager = brackets.getModule("preferences/PreferencesManager"),
+	  CodeInspection = brackets.getModule("language/CodeInspection"),
 
-		preferences = PreferencesManager.getExtensionPrefs("jdiehl.less-autocompile"),
-		panel,
-		$panel;
+		preferences = PreferencesManager.getExtensionPrefs("jdiehl.less-autocompile");
 
 	// default preferences
 	$.extend(preferences, {
@@ -73,64 +69,34 @@ define(function (require, exports, module) {
 		return $.when.apply($, tasks);
 	}
 
-	function interpretError(err) {
-		if (err === undefined || err === null) {
-			return "Unkonwn error";
+	function convertError(error) {
+		switch (error.code) {
+		case "EACCES":
+			return { pos: {}, message: "Could not open output file.", type: "FileSystem" };
+		default:
+			return { pos: { line: error.line - 1, ch: error.index }, message: error.message, type: error.type };
 		}
-
-		// node error
-		if (err.code) {
-			switch (err.code) {
-			case "ENOENT":
-				return "Could not open file: " + err.path;
-			}
-		}
-
-		// less error
-		if (err.type) {
-			switch (err.type) {
-			case "Parse":
-				return err.message + " in " + err.filename + ":" + err.line;
-			}
-
-		}
-
-		return err.message ? err.message : err;
 	}
 
-	AppInit.appReady(function () {
-		$(DocumentManager).on("documentSaved", function (event, document) {
-			var documentPath = document.file.fullPath;
+	function compileLess(content, documentPath) {
+		var deferred = new $.Deferred();
 
-			// check if the document was truly saved and is a less document
-			if (document.file.isDirty || documentPath.substr(documentPath.length - 5, 5) !== ".less") {
-				return;
-			}
-
-			// connect to the node server & read the file
-			$.when(connectToNodeModule("LessCompiler"), loadFilesToCompile(preferences.compilePath, documentPath))
-				// compile
-				.then(compile)
-				// update the panel
-				.then(function () {
-					if (panel) {
-						panel.hide();
-					}
-				}, function () {
-					if (!panel) {
-						$panel = $("<div id='less-parser-error' class='bottom-panel'>");
-						panel = PanelManager.createBottomPanel("jdiehl.less-autocompile", $panel);
-					} else {
-						$panel.html("");
-					}
-					Array.prototype.forEach.call(arguments, function (err) {
-						if (err) {
-							$panel.append($("<p>" + interpretError(err) + "</p>"));
-						}
-					});
-					panel.show();
-				});
+		// connect to the node server & read the file
+		$.when(connectToNodeModule("LessCompiler"), loadFilesToCompile(preferences.compilePath, documentPath)).then(function (compiler, files) {
+			compile(compiler, files).then(function (result) {
+				deferred.resolve();
+			}, function (error) {
+				deferred.resolve({ errors: [convertError(error)] });
+			});
 		});
+
+		return deferred.promise();
+	}
+
+	// Register for LESS files
+	CodeInspection.register("less", {
+		name: "less-autocompile",
+		scanFileAsync: compileLess
 	});
 
 });
