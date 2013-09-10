@@ -11,10 +11,7 @@ maxerr: 50, node: true */
 
 	// compile the given less file
 	function compile(lessFile, cssFile) {
-           var parser = new(less.Parser)({
-			filename: path.basename(lessFile),
-			paths: [path.dirname(lessFile)]
-		});
+
 		// read less input
 		fs.readFile(lessFile, function (err, data) {
 			if (err) {
@@ -23,6 +20,10 @@ maxerr: 50, node: true */
 			}
 			
 			// parse less
+			var parser = new less.Parser({
+				filename: path.basename(lessFile),
+				paths: [path.dirname(lessFile)]
+			});
 			parser.parse(data.toString(), function (err, tree) {
 				if (err) {
 					console.error(err);
