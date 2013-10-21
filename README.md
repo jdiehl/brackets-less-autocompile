@@ -5,6 +5,7 @@ LESS AutoCompile is an extension for the code editor Brackets that adds automati
 ### Acknowledgements
 
 Thanks to James Lawrence for enabling relative imports in less.
+Thanks to Martin Zagora for adding the less verison number to the output.
 
 ### License
 The MIT License (MIT)
