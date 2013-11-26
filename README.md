@@ -11,6 +11,7 @@ To compile the file into a custom output file, add the following line to the beg
 * Thanks to [James Lawrence](https://github.com/jlaw90) for enabling relative imports in less.
 * Thanks to [Martin Zagora](https://github.com/zaggino) for adding the less verison number to the output.
 * Thanks to [Dimitar S.](https://github.com/deemeetar) for allowing users to specify a custom output path.
+* Thanks to [FezVrasta](https://github.com/FezVrasta) for tweaking the less compiler settings.
 
 ### License
 The MIT License (MIT)
