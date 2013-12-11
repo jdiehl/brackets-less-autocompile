@@ -9,7 +9,10 @@ define(function (require, exports, module) {
 		ProjectManager = brackets.getModule("project/ProjectManager"),
 		ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
 		NodeConnection = brackets.getModule("utils/NodeConnection"),
-		DocumentManager = brackets.getModule("document/DocumentManager");
+		DocumentManager = brackets.getModule("document/DocumentManager"),
+		PanelManager   = brackets.getModule("view/PanelManager");
+
+	var panel, $panel;
 
 	// connect to the node server
 	function connect(callback) {
@@ -41,6 +44,22 @@ define(function (require, exports, module) {
 		});
 	}
 
+	function onCompileSuccess(result) {
+		if (panel) {
+			panel.hide();
+		}
+		// todo: update live preview
+	}
+
+	function onCompileError(err) {
+		if (!panel) {
+			$panel = $("<div class='bottom-panel'>");
+			panel = PanelManager.createBottomPanel("jdiehl.less-autocompile", $panel);
+		}
+		$panel.html("<p>" + err.message + " at line " + err.line + "</p>");
+		panel.show();
+	}
+
 	// a document was saved
 	function onDocumentSaved(event, document) {
 
@@ -59,11 +78,7 @@ define(function (require, exports, module) {
 					console.error(err);
 					return;
 				}
-				compiler.compile(path).done(function (result) {
-					console.log(result);
-				}).fail(function (err) {
-					console.error(err);
-				});
+				compiler.compile(path).done(onCompileSuccess).fail(onCompileError);
 			});
 
 		}
