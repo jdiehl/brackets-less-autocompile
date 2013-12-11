@@ -37,11 +37,7 @@ maxerr: 50, node: true */
     }
 
     // compile the given less file
-    function compile(lessFile) {
-
-        function handleError(err) {
-            console.error(err);
-        }
+    function compile(lessFile, callback) {
 
         // read the less file, returns object with the following keys:
         // - content: content of the file
@@ -49,14 +45,14 @@ maxerr: 50, node: true */
         // - main: override compile file (optional)
         readLessFile(lessFile, function (err, result) {
             if (err) {
-                handleError(err);
+                callback(err);
                 return;
             }
 
             // compile a different file instead
             if (result.main) {
                 var mainFile = path.join(path.dirname(lessFile), result.main);
-                compile(mainFile);
+                compile(mainFile, callback);
                 return;
             }
 
@@ -81,7 +77,7 @@ maxerr: 50, node: true */
             // parse the file
             parser.parse(result.content, function (err, tree) {
                 if (err) {
-                    handleError(err);
+                    callback(err);
                     return;
                 }
 
@@ -91,8 +87,9 @@ maxerr: 50, node: true */
                 // write css output
                 mkfile(cssFile, output, function (err) {
                     if (err) {
-                        handleError(err);
-                        return;
+                        callback(err);
+                    } else {
+                        callback(null, { filepath: cssFile, output: output });
                     }
                 });
             });
@@ -123,7 +120,7 @@ maxerr: 50, node: true */
             "compile", // command name
             compile, // command handler function
             true, // this command is asynchronous
-            "Compiles a less file", ["lessPath", "cssPath"], // path parameters
+            "Compiles a less file", ["lessPath"], // path parameters
             null);
     }
 
