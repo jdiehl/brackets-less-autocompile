@@ -41,6 +41,10 @@ define(function (require, exports, module) {
 		});
 	}
 
+	function onCompile(err, output) {
+		console.log(err, output);
+	}
+
 	// a document was saved
 	function onDocumentSaved(event, document) {
 
@@ -59,7 +63,7 @@ define(function (require, exports, module) {
 					console.error(err);
 					return;
 				}
-				compiler.compile(path, path.substr(0, path.length - 5) + ".css");
+				compiler.compile(path, onCompile);
 			});
 
 		}

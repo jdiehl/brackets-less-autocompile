@@ -4,7 +4,13 @@ LESS AutoCompile is an extension for the code editor Brackets that adds automati
 
 To compile the file into a custom output file, add the following line to the beginning of the less file that is compiled:
 
-  //out: NEWFILE.css
+  // out: NEWFILE.css
+
+To tell the compiler to compile another file instead of this one (typically used for imported files), add the following line instead:
+
+  // main: MAINFILE.less
+
+When saving the file, the referenced file will be compiled instead of the saved file.
 
 ### Acknowledgements
 
