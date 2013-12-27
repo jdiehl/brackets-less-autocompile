@@ -53,7 +53,7 @@ define(function (require, exports, module) {
 
 	function onCompileError(err) {
 		if (!panel) {
-			$panel = $("<div class='bottom-panel'>");
+			$panel = $("<div id='less-parser-error' class='bottom-panel'>");
 			panel = PanelManager.createBottomPanel("jdiehl.less-autocompile", $panel);
 		}
 		$panel.html("<p>" + err.message + " at line " + err.line + "</p>");
