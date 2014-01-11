@@ -2,15 +2,17 @@
 
 LESS AutoCompile is an extension for the code editor Brackets that adds automatic compilation of LESS files upon saving. LESS AutoCompile is installed from the Package Manager that is included in Brackets.
 
-To compile the file into a custom output file, add the following line to the beginning of the less file that is compiled:
+To compile the file into a custom output file, add the following line to the beginning of the less file:
 
   // out: NEWFILE.css
 
-To tell the compiler to compile another file instead of this one (typically used for imported files), add the following line instead:
+To tell the extension to compile another file instead of this one (typically used for imported files), add the following line instead:
 
   // main: MAINFILE.less
 
-When saving the file, the referenced file will be compiled instead of the saved file.
+You can also specify custom compiler settings in this line (this can be combined with out but not with main):
+
+  // compress: true, strict-math: true
 
 ### Acknowledgements
 
