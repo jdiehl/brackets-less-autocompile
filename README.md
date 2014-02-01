@@ -12,7 +12,7 @@ To tell the extension to compile another file instead of this one (typically use
 
 You can also specify custom compiler settings in this line (this can be combined with out but not with main):
 
-  // compress: true, strict-math: true
+  // compress: true, strictMath: true
 
 ### Acknowledgements
 
