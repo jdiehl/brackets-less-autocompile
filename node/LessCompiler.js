@@ -82,7 +82,17 @@ maxerr: 50, node: true */
             var lessPath = path.dirname(lessFile);
             var cssFile;
             if (result.out) {
-                cssFile = path.join(lessPath, result.out);
+                cssFile = result.out;
+                if (path.sep === "\\\\") {
+                    cssFile.replace("\\", "\\\\");
+                    if (cssFile[1] !== ":") {
+                        cssFile = path.join(lessPath, cssFile);
+                    }
+                } else {
+                    if (cssFile[0] !== "/") {
+                        cssFile = path.join(lessPath, cssFile);
+                    }
+                }
                 if (path.extname(cssFile) === "") {
                     cssFile += ".css";
                 }
@@ -94,7 +104,6 @@ maxerr: 50, node: true */
             result.options.paths = [lessPath];
             result.options.filename = path.basename(lessFile);
             var parser = new less.Parser(result.options);
-            console.log(result.options);
 
             // parse the file
             parser.parse(result.content, function (err, tree) {
