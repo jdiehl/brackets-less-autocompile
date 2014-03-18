@@ -10,8 +10,11 @@ define(function (require, exports, module) {
 		ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
 		NodeConnection = brackets.getModule("utils/NodeConnection"),
 		DocumentManager = brackets.getModule("document/DocumentManager"),
-		PanelManager   = brackets.getModule("view/PanelManager");
-
+		PanelManager   = brackets.getModule("view/PanelManager"),
+        FileSystem      = brackets.getModule("filesystem/FileSystem"),
+        FileUtils       = brackets.getModule("file/FileUtils"),
+        PreferencesManager = brackets.getModule("preferences/PreferencesManager");
+    
 	var panel, $panel;
 
 	// connect to the node server
@@ -78,12 +81,50 @@ define(function (require, exports, module) {
 					console.error(err);
 					return;
 				}
-				compiler.compile(path).done(onCompileSuccess).fail(onCompileError);
+                
+                // Compile the files listed in the compile config file.
+                // Defaults to "compile.json" in the root of project.
+                // If no compilation config found, defaults to normal behavior.
+                getCompileConfigPath(function(configPath) {
+                    var configFile = FileSystem.getFileForPath(configPath),
+                        projectPath = ProjectManager.getProjectRoot().fullPath,
+                        promise, paths;
+                
+                    FileUtils.readAsText(configFile).done(function(text) {
+                        paths = JSON.parse(text).less;
+                        paths.forEach(function(path) {
+                            promise = compiler.compile(projectPath + path);
+                            promise.done(onCompileSuccess).fail(onCompileError);
+                        });
+                    }).fail(function() {
+                        compiler.compile(path).done(onCompileSuccess).fail(onCompileError);
+                    });
+                });
 			});
 
 		}
 	}
+    
+    function getCompileConfigPath(callback) {
+        var defaultPath = 'compile.json',
+            projectPath = ProjectManager.getProjectRoot().fullPath,
+            prefs;
 
+        getExtensionName(function(name) {
+            prefs = PreferencesManager.getExtensionPrefs(name);
+            callback(projectPath + (prefs.get('compilePath') || defaultPath));
+        });
+    }
+    
+    function getExtensionName(callback) {
+        var packagePath = ExtensionUtils.getModulePath(module, 'package.json'),
+            packageFile = FileSystem.getFileForPath(packagePath);
+                
+        FileUtils.readAsText(packageFile).done(function(text) {
+            callback(JSON.parse(text).name); 
+        });
+    }
+    
 	AppInit.appReady(function () {
 		$(DocumentManager).on("documentSaved", onDocumentSaved);
 	});
