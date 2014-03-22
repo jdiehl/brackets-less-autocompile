@@ -4,15 +4,22 @@ LESS AutoCompile is an extension for the code editor Brackets that adds automati
 
 To compile the file into a custom output file, add the following line to the beginning of the less file:
 
-  // out: NEWFILE.css
+    // out: NEWFILE.css
 
 To tell the extension to compile another file instead of this one (typically used for imported files), add the following line instead:
 
-  // main: MAINFILE.less
+    // main: MAINFILE.less
 
 You can also specify custom compiler settings in this line (this can be combined with out but not with main):
 
-  // compress: true, strictMath: true
+    // out: ../dist/app.css, compress: true, strictMath: true
+
+You can tell the extension to always compile a specific set of files by creating a file called `compile.json` in your project's root folder:
+
+    { "less": [ "path/to/file1.less", "path/to/file2.less" ] }
+
+All file paths must be relative to the project's root folder.
+
 
 ### Acknowledgements
 
@@ -20,6 +27,8 @@ You can also specify custom compiler settings in this line (this can be combined
 * Thanks to [Martin Zagora](https://github.com/zaggino) for adding the less verison number to the output.
 * Thanks to [Dimitar S.](https://github.com/deemeetar) for allowing users to specify a custom output path.
 * Thanks to [FezVrasta](https://github.com/FezVrasta) for tweaking the less compiler settings.
+* Thanks to [Kenneth Ruddick](https://github.com/KenRud) for the compile.json configuration addition.
+
 
 ### License
 The MIT License (MIT)

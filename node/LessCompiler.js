@@ -1,165 +1,162 @@
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4,
-maxerr: 50, node: true */
-/*global */
-
+/*jshint evil: true */
 (function () {
-    "use strict";
+	"use strict";
 
-    var less = require("less");
-    var path = require("path");
-    var fs = require("fs");
-    var mkpath = require("mkpath");
+	var less = require("less"),
+		path = require("path"),
+		fs = require("fs"),
+		mkpath = require("mkpath");
 
-    function loadOptions(optionsString) {
-        var i, j, k, v, p = optionsString.split(",");
-        var options = {};
-        for (i in p) {
-            j = p[i].indexOf(":");
-            if (j < 0) continue;
-            k = p[i].substr(0, j).trim();
-            v = p[i].substr(j + 1).trim();
-            if (v === "true") v = true;
-            else if (v === "false") v = false;
-            options[k] = v;
-        }
-        return options;
-    }
+	function readOptions(input) {
+		var options = {};
+		input.split(",").forEach(function (item) {
+			var key, value, i = item.indexOf(":");
+			if (i < 0) {
+				return;
+			}
+			key = item.substr(0, i).trim();
+			value = item.substr(i + 1).trim();
+			if (value.match(/^(true|false|undefined|null|[0-9]+)$/)) {
+				value = eval(value);
+			}
+			options[key] = value;
+		});
+		return options;
+	}
 
-    function readLessFile(lessFile, callback) {
+	// read less input
+	function readLessFile(lessFile, callback) {
+		fs.readFile(lessFile, function (err, data) {
+			if (err) {
+				callback(err);
+				return;
+			}
 
-        // read less input
-        fs.readFile(lessFile, function (err, data) {
-            if (err) {
-                callback(err);
-                return;
-            }
+			var content = data.toString(),
+				result = { "content": content },
+				match = /^\s*\/\/\s*(.+)/.exec(content);
 
-            var content = data.toString();
-            var result = { "content": content };
+			if (match) {
 
-            // match // in the first line
-            var match = /^\s*\/\/\s*(.+)/.exec(content);
-            if (match) {
-                result.options = loadOptions(match[1]);
-                if (result.options.main) {
-                    result.main = result.options.main;
-                    delete result.options.main;
-                }
-                if (result.options.out) {
-                    result.out = result.options.out;
-                    delete result.options.out;
-                }
-            } else {
-                result.options = {};
-            }
-            callback(null, result);
-        });
+				// read the options
+				result.options = readOptions(match[1]);
+				if (result.options.main) {
+					result.main = result.options.main;
+					delete result.options.main;
+				}
+				if (result.options.out) {
+					result.out = result.options.out;
+					delete result.options.out;
+				}
+			} else {
+				result.options = {};
+			}
+			callback(null, result);
+		});
 
-    }
+	}
 
-    // compile the given less file
-    function compile(lessFile, callback) {
+	// makes a file in a path where directories may or may not have existed before
+	function mkfile(filepath, content, callback) {
+		mkpath(path.dirname(filepath), function (err) {
+			if (err) {
+				callback(err);
+			} else {
+				fs.writeFile(filepath, content, callback);
+			}
+		});
+	}
 
-        // read the less file, returns object with the following keys:
-        // - content: content of the file
-        // - out: override output filename (optional)
-        // - main: override compile file (optional)
-        // - options: compiler options (optional)
-        readLessFile(lessFile, function (err, result) {
-            if (err) {
-                callback(err);
-                return;
-            }
+	// compile the given less file
+	function compile(lessFile, callback) {
 
-            // compile a different file instead
-            if (result.main) {
-                var mainFile = path.join(path.dirname(lessFile), result.main);
-                compile(mainFile, callback);
-                return;
-            }
+		// read the less file, returns object with the following keys:
+		// - content: content of the file
+		// - out: override output filename (optional)
+		// - main: override compile file (optional)
+		// - options: compiler options (optional)
+		readLessFile(lessFile, function (err, result) {
+			if (err) {
+				callback(err);
+				return;
+			}
 
-            // determine output filename
-            var lessPath = path.dirname(lessFile);
-            var cssFile;
-            if (result.out) {
-                cssFile = result.out;
-                if (path.sep === "\\\\") {
-                    cssFile.replace("\\", "\\\\");
-                    if (cssFile[1] !== ":") {
-                        cssFile = path.join(lessPath, cssFile);
-                    }
-                } else {
-                    if (cssFile[0] !== "/") {
-                        cssFile = path.join(lessPath, cssFile);
-                    }
-                }
-                if (path.extname(cssFile) === "") {
-                    cssFile += ".css";
-                }
-            } else {
-                cssFile = lessFile.substr(0, lessFile.length - 5) + ".css";
-            }
+			// compile a different file instead
+			if (result.main) {
+				compile(path.join(path.dirname(lessFile), result.main), callback);
+				return;
+			}
 
-            // create less parser
-            result.options.paths = [lessPath];
-            result.options.filename = path.basename(lessFile);
-            var parser = new less.Parser(result.options);
+			// determine output filename
+			var parser, cssFile, lessPath = path.dirname(lessFile);
+			if (result.out) {
+				cssFile = result.out;
+				if (path.sep === "\\\\") {
+					cssFile.replace("\\", "\\\\");
+					if (cssFile[1] !== ":") {
+						cssFile = path.join(lessPath, cssFile);
+					}
+				} else {
+					if (cssFile[0] !== "/") {
+						cssFile = path.join(lessPath, cssFile);
+					}
+				}
+				if (path.extname(cssFile) === "") {
+					cssFile += ".css";
+				}
+			} else {
+				cssFile = lessFile.substr(0, lessFile.length - 5) + ".css";
+			}
 
-            // parse the file
-            parser.parse(result.content, function (err, tree) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
+			// create less parser
+			result.options.paths = [lessPath];
+			result.options.filename = path.basename(lessFile);
+			parser = new less.Parser(result.options);
 
-                var output = result.options.compress ? "" : "/* Generated by less " + less.version.join(".") + " */\n";
-                try {
-                    output += tree.toCSS(result.options);
-                } catch (err) {
-                    callback(err);
-                    return;
-                }
+			// parse the file
+			parser.parse(result.content, function (err, tree) {
+				if (err) {
+					callback(err);
+					return;
+				}
 
-                // write css output
-                mkfile(cssFile, output, function (err) {
-                    if (err) {
-                        callback(err);
-                    } else {
-                        callback(null, { filepath: cssFile, output: output });
-                    }
-                });
-            });
-        });
-    }
+				var output = result.options.compress ? "" : "/* Generated by less " + less.version.join(".") + " */\n";
+				try {
+					output += tree.toCSS(result.options);
+				} catch (err) {
+					callback(err);
+					return;
+				}
 
-    // makes a file in a path where directories may or may not have existed before
-    var mkfile = function (filepath, content, callback) {
-        mkpath(path.dirname(filepath), function (err) {
-            if (err) {
-                callback(err);
-            } else {
-                fs.writeFile(filepath, content, callback);
-            }
-        });
-    };
+				// write css output
+				mkfile(cssFile, output, function (err) {
+					if (err) {
+						callback(err);
+					} else {
+						callback(null, { filepath: cssFile, output: output });
+					}
+				});
+			});
+		});
+	}
 
-    // set up service for brackets
-    function init(DomainManager) {
-        if (!DomainManager.hasDomain("LessCompiler")) {
-            DomainManager.registerDomain("LessCompiler", {
-                major: 1,
-                minor: 0
-            });
-        }
-        DomainManager.registerCommand(
-            "LessCompiler", // domain name
-            "compile", // command name
-            compile, // command handler function
-            true, // this command is asynchronous
-            "Compiles a less file", ["lessPath"], // path parameters
-            null);
-    }
+	// set up service for brackets
+	function init(DomainManager) {
+		if (!DomainManager.hasDomain("LessCompiler")) {
+			DomainManager.registerDomain("LessCompiler", {
+				major: 1,
+				minor: 0
+			});
+		}
+		DomainManager.registerCommand(
+			"LessCompiler", // domain name
+			"compile", // command name
+			compile, // command handler function
+			true, // this command is asynchronous
+			"Compiles a less file", ["lessPath"], // path parameters
+			null);
+	}
 
-    exports.init = init;
+	exports.init = init;
 
 }());
