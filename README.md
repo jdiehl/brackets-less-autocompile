@@ -2,19 +2,27 @@
 
 LESS AutoCompile is an extension for the code editor Brackets that adds automatic compilation of LESS files upon saving. LESS AutoCompile is installed from the Package Manager that is included in Brackets.
 
-To compile the file into a custom output file, add the following line to the beginning of the less file:
 
-    // out: NEWFILE.css
+### Compile Options
 
-To tell the extension to compile another file instead of this one (typically used for imported files), add the following line instead:
-
-    // main: MAINFILE.less
-
-You can also specify custom compiler settings in this line (this can be combined with out but not with main):
+LESS compile options can be set in the first line of the edited file:
 
     // out: ../dist/app.css, compress: true, strictMath: true
 
-You can tell the extension to always compile a specific set of files by creating a file called `compile.json` in your project's root folder:
+The following compile options are available:
+
+* out: redirect the css output to a different file
+* main: compile a different file instead of this one (ignores all other options)
+* compress: compress the css output
+* strictMath: require brackets around math expressions
+* sourceMap: generate a source map
+
+Other less compiler options might also work but are untested at this point. See [Grunt LESS](https://github.com/gruntjs/grunt-contrib-less#options) for a complete list of possible options.
+
+
+### Project-wide Compile Options
+
+You can tell the extension to always compile a specific set of files in a project independent of the edited file by creating a configuration file called `compile.json` in your project's root folder:
 
     { "less": [ "path/to/file1.less", "path/to/file2.less" ] }
 
