@@ -1,1 +1,1 @@
-zip -9r ~/Desktop/pack.zip --exclude=*.git* *
+zip -9r ~/Desktop/pack.zip * -x \*.git example/\*
