@@ -13,7 +13,7 @@ define(function (require, exports, module) {
 
 	// default preferences
 	$.extend(preferences, {
-		"compilePath": "compile.json"
+		"compilePath": ".brackets.json"
 	});
 
 	// load a named node module
