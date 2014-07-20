@@ -118,7 +118,6 @@
 			parserOptions = pick(result.options, lessOptionKeys.parser);
 			parserOptions.paths = [lessPath];
 			parserOptions.filename = path.basename(lessFile);
-			console.log(parserOptions);
 			parser = new less.Parser(parserOptions);
 
 			// parse the file
