@@ -8,6 +8,8 @@ define(function (require, exports, module) {
     FileUtils = brackets.getModule('file/FileUtils'),
     PreferencesManager = brackets.getModule('preferences/PreferencesManager'),
     CodeInspection = brackets.getModule('language/CodeInspection'),
+    DocumentManager = brackets.getModule('document/DocumentManager'),
+    EditorManager = brackets.getModule('editor/EditorManager'),
 
     preferences = PreferencesManager.getExtensionPrefs('jdiehl.less-autocompile');
 
@@ -99,6 +101,13 @@ define(function (require, exports, module) {
   CodeInspection.register('less', {
     name: 'less-autocompile',
     scanFileAsync: compileLess
+  });
+
+  // Register for documentSaved events to support inline-editors
+  $(DocumentManager).on('documentSaved', function (event, document) {
+  	if (EditorManager.getCurrentFullEditor().document !== document) {
+  		compileLess(document.getText(), document.file.fullPath);
+  	}
   });
 
 });
