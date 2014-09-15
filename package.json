@@ -4,7 +4,10 @@
     "description": "Automatically compiles less files upon saving.",
     "homepage": "https://github.com/jdiehl/brackets-less-autocompile",
     "version": "1.1.1",
-    "author": "Jonathan Diehl <jonathan.diehl@gmail.com>",
+    "author": {
+        "name": "Jonathan diehl",
+        "url": "https://github.com/jdiehl"
+    },
     "contributors": [
         "James Lawrence (https://github.com/jlaw90)",
         "Martin Zagora (https://github.com/zaggino)",
