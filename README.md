@@ -27,7 +27,7 @@ Other less compiler options might also work but are untested at this point. See 
 
 ### Project-wide Compile Options
 
-You can tell the extension to always compile a specific set of files in a project independent of the edited file by creating a configuration file called `compile.json` in your project's root folder:
+You can tell the extension to always compile a specific set of files in a project independent of the edited file by creating a configuration file called `.brackets.json` or `compile.json` in your project's root folder:
 
     { "less": [ "path/to/file1.less", "path/to/file2.less" ] }
 
@@ -43,12 +43,17 @@ How can I redirect the output to a separate file?
 > 
 >     // out: new-file.css
 
-How can supress compiling this less file / compile a different less file than the one being edited?
+How can I supress compiling this less file / compile a different less file than the one being edited?
 
 > Add a reference to the master.less file to the head of the imported less file:
 > 
 >     // main: master.less
 
+How can I supress the compilation of a single less file
+
+> Set out to null
+>
+>     // out: null
 
 ### Acknowledgements
 
