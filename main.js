@@ -74,8 +74,12 @@ define(function (require, exports, module) {
   function convertError(error) {
     switch (error.code) {
     case 'EACCES':
-      return { pos: {}, message: 'Could not open output file.', type: 'FileSystem' };
+      return { pos: {}, message: 'Cannot open file \'' + error.path + '\'' };
     default:
+      if (error.filename !== EditorManager.getCurrentFullEditor().document.file.name) {
+        return { pos: {}, message: 'Error in file \'' + error.filename + '\' on line ' + error.line + ': ' +
+          error.message, type: error.type };
+      }
       return { pos: { line: error.line - 1, ch: error.index }, message: error.message, type: error.type };
     }
   }
