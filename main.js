@@ -6,17 +6,9 @@ define(function (require, exports, module) {
     NodeConnection = brackets.getModule('utils/NodeConnection'),
     FileSystem = brackets.getModule('filesystem/FileSystem'),
     FileUtils = brackets.getModule('file/FileUtils'),
-    PreferencesManager = brackets.getModule('preferences/PreferencesManager'),
     CodeInspection = brackets.getModule('language/CodeInspection'),
     DocumentManager = brackets.getModule('document/DocumentManager'),
-    EditorManager = brackets.getModule('editor/EditorManager'),
-
-    preferences = PreferencesManager.getExtensionPrefs('jdiehl.less-autocompile');
-
-  // default preferences
-  $.extend(preferences, {
-    'compilePath': 'compile.json'
-  });
+    EditorManager = brackets.getModule('editor/EditorManager');
 
   // load a named node module
   function connectToNodeModule(moduleName) {
@@ -29,16 +21,29 @@ define(function (require, exports, module) {
     });
   }
 
+  function loadProjectConfig(callback) {
+    var projectPath = ProjectManager.getProjectRoot().fullPath,
+      file = FileSystem.getFileForPath(projectPath + '.brackets.json');
+    FileUtils.readAsText(file).then(callback, function () {
+      var file = FileSystem.getFileForPath(projectPath + 'compile.json');
+      FileUtils.readAsText(file).then(callback, function () {
+        callback();
+      });
+    });
+  }
+
   // Compile the files listed in the compile config file.
   // Defaults to 'compile.json' in the root of project.
   // If no compilation config found, defaults to normal behavior.
-  function loadFilesToCompile(compilePath, documentPath) {
+  function loadFilesToCompile(documentPath) {
     var projectPath = ProjectManager.getProjectRoot().fullPath,
-      configFile = FileSystem.getFileForPath(projectPath + compilePath),
       deferred = $.Deferred();
   
     // read the config file
-    FileUtils.readAsText(configFile).then(function (text) {
+    loadProjectConfig(function (text) {
+      if (!text) {
+        deferred.resolve([documentPath]);
+      }
       var files, err;
       try {
         // try to parse it
@@ -48,9 +53,9 @@ define(function (require, exports, module) {
       }
       if (err) {
         // reject with error if not parsable
-        deferred.reject({ pos: {}, message: 'Invalid configuration file \'compile.json\': ' + err ? err.message : '' });
+        deferred.reject({ pos: {}, message: 'Invalid project compile settings: ' + err ? err.message : '' });
       } else if (!(files instanceof Array)) {
-        deferred.reject({ pos: {}, message: 'Invalid configuration file \'compile.json\'.' });
+        deferred.reject({ pos: {}, message: 'Invalid project compile settings' });
       } else {
         // or: read file entries
         files.forEach(function (file, i) {
@@ -58,8 +63,6 @@ define(function (require, exports, module) {
         });
         deferred.resolve(files);
       }
-    }).fail(function() {
-      deferred.resolve([documentPath]);
     });
     return deferred;
   }
@@ -90,7 +93,7 @@ define(function (require, exports, module) {
   function compileLess(content, documentPath) {
     var deferred = new $.Deferred(),
     	connection = connectToNodeModule('LessCompiler'),
-    	files = loadFilesToCompile(preferences.compilePath, documentPath);
+    	files = loadFilesToCompile(documentPath);
 
     // connect to the node server & read the file
     $.when(connection, files).then(function (compiler, files) {
