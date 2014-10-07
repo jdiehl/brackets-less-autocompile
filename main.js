@@ -48,7 +48,9 @@ define(function (require, exports, module) {
       }
       if (err) {
         // reject with error if not parsable
-        deferred.reject(new Error('Invalid configuration file (compile.json): ' + err.message));
+        deferred.reject({ pos: {}, message: 'Invalid configuration file \'compile.json\': ' + err ? err.message : '' });
+      } else if (!(files instanceof Array)) {
+        deferred.reject({ pos: {}, message: 'Invalid configuration file \'compile.json\'.' });
       } else {
         // or: read file entries
         files.forEach(function (file, i) {
@@ -74,6 +76,7 @@ define(function (require, exports, module) {
   function convertError(error) {
     switch (error.code) {
     case 'EACCES':
+    case 'ENOENT':
       return { pos: {}, message: 'Cannot open file \'' + error.path + '\'' };
     default:
       if (error.filename !== EditorManager.getCurrentFullEditor().document.file.name) {
@@ -96,6 +99,8 @@ define(function (require, exports, module) {
       }, function (error) {
         deferred.resolve({ errors: [convertError(error)] });
       });
+    }, function (error) {
+      deferred.resolve({ errors: [error] });
     });
 
     return deferred.promise();
