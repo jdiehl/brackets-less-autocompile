@@ -98,7 +98,10 @@
 
 			// determine output filename
 			var parser, parserOptions, cssFile, sourceMapFilename, lessPath = path.dirname(lessFile);
-			if (result.options.out) {
+			if (result.options.out === null || result.options.out === false) {
+				callback();
+				return;
+			} else if (result.options.out) {
 				cssFile = path.resolve(lessPath, result.options.out);
 				if (path.extname(cssFile) === '') {
 					cssFile += '.css';
