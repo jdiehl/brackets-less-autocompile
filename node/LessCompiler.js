@@ -78,6 +78,7 @@
 
 	// compile the given less file
 	function compile(lessFile, callback) {
+		var dir;
 
 		// read the less file, returns object with the following keys:
 		// - content: content of the file
@@ -120,9 +121,12 @@
 				sourceMapFilename = cssFile + '.map';
 			}
 
+			// chdir
+			dir = process.cwd();
+			process.chdir(lessPath);
+
 			// create less parser
 			parserOptions = pick(result.options, lessOptionKeys.parser);
-			parserOptions.paths = [lessPath];
 			parserOptions.filename = path.basename(lessFile);
 			parser = new less.Parser(parserOptions);
 
@@ -148,9 +152,11 @@
 				try {
 					output += tree.toCSS(renderOptions);
 				} catch (err) {
+					process.chdir(dir);
 					callback(err);
 					return;
 				}
+				process.chdir(dir);
 
 				// write css output
 				output += appendToOutput;
