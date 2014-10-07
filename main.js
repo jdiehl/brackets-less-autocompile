@@ -117,7 +117,7 @@ define(function (require, exports, module) {
 
   // Register for documentSaved events to support inline-editors
   $(DocumentManager).on('documentSaved', function (event, document) {
-  	if (EditorManager.getCurrentFullEditor().document !== document) {
+  	if (EditorManager.getCurrentFullEditor().document !== document && document.getLanguage().getId() === 'less') {
   		compileLess(document.getText(), document.file.fullPath);
   	}
   });
