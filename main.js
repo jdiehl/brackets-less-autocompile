@@ -92,8 +92,8 @@ define(function (require, exports, module) {
 
   function compileLess(content, documentPath) {
     var deferred = new $.Deferred(),
-    	connection = connectToNodeModule('LessCompiler'),
-    	files = loadFilesToCompile(documentPath);
+      connection = connectToNodeModule('LessCompiler'),
+      files = loadFilesToCompile(documentPath);
 
     // connect to the node server & read the file
     $.when(connection, files).then(function (compiler, files) {
@@ -117,9 +117,9 @@ define(function (require, exports, module) {
 
   // Register for documentSaved events to support inline-editors
   $(DocumentManager).on('documentSaved', function (event, document) {
-  	if (EditorManager.getCurrentFullEditor().document !== document && document.getLanguage().getId() === 'less') {
-  		compileLess(document.getText(), document.file.fullPath);
-  	}
+    if (EditorManager.getCurrentFullEditor().document !== document && document.getLanguage().getId() === 'less') {
+      compileLess(document.getText(), document.file.fullPath);
+    }
   });
 
 });

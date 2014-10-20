@@ -1,193 +1,159 @@
 /*jshint node: true, evil: true */
 (function () {
-	'use strict';
+  'use strict';
 
-	var less = require('less'),
-		path = require('path'),
-		fs = require('fs'),
-		mkpath = require('mkpath'),
-		lessOptionKeys;
+  var less = require('less'),
+    path = require('path'),
+    fs = require('fs'),
+    mkpath = require('mkpath');
 
-	lessOptionKeys = {
-		parser: ['optimization', 'filename', 'strictImports', 'syncImport',
-			'dumpLineNumbers', 'relativeUrls', 'rootpath'],
-		render: ['compress', 'cleancss', 'ieCompat', 'strictMath', 'strictUnits',
-			'sourceMap', 'sourceMapURL', 'sourceMapBasepath', 'sourceMapRootpath',
-			'outputSourceFiles']
-	};
+  function readOptions(content) {
+    var firstLine = content.substr(0, content.indexOf('\n')),
+      match = /^\s*\/\/\s*(.+)/.exec(firstLine),
+      options = {};
+    
+    if (!match) {
+      return options;
+    }
 
-	function readOptions(input) {
-		var options = {};
-		input.split(',').forEach(function (item) {
-			var key, value, i = item.indexOf(':');
-			if (i < 0) {
-				return;
-			}
-			key = item.substr(0, i).trim();
-			value = item.substr(i + 1).trim();
-			if (value.match(/^(true|false|undefined|null|[0-9]+)$/)) {
-				value = eval(value);
-			}
-			options[key] = value;
-		});
-		return options;
-	}
+    match[1].split(',').forEach(function (item) {
+      var key, value, i = item.indexOf(':');
+      if (i < 0) {
+        return;
+      }
+      key = item.substr(0, i).trim();
+      value = item.substr(i + 1).trim();
+      if (value.match(/^(true|false|undefined|null|[0-9]+)$/)) {
+        value = eval(value);
+      }
+      options[key] = value;
+    });
+    return options;
+  }
 
-	function pick(options, keys) {
-		var out = {};
-		keys.forEach(function (key) {
-			if (options[key]) {
-				out[key] = options[key];
-			}
-		});
-		return out;
-	}
+  // less render
+  function render(content, options, callback) {
+    console.log('render', options);
+    var css, parser = new less.Parser(options);
+    parser.parse(content, function (err, tree) {
+      if (err) {
+        return callback(err);
+      }
 
-	// read less input
-	function readLessFile(lessFile, callback) {
-		fs.readFile(lessFile, function (err, data) {
-			if (err) {
-				callback(err);
-				return;
-			}
+      try {
+        css = tree.toCSS(options);
+      } catch (err) {
+        return callback(err);
+      }
 
-			var content = data.toString(),
-				result = { 'content': content },
-				match = /^\s*\/\/\s*(.+)/.exec(content);
+      callback(null, css);
+    });
+  }
 
-			if (match) {
-				result.options = readOptions(match[1]);
-			} else {
-				result.options = {};
-			}
-			callback(null, result);
-		});
+  // makes a file in a path where directories may or may not have existed before
+  function mkfile(filepath, content, callback) {
+    mkpath(path.dirname(filepath), function (err) {
+      if (err) {
+        return callback ? callback(err) : undefined;
+      }
+      fs.writeFile(filepath, content, callback);
+    });
+  }
 
-	}
+  // compile the given less file
+  function compile(lessFile, callback) {
 
-	// makes a file in a path where directories may or may not have existed before
-	function mkfile(filepath, content, callback) {
-		mkpath(path.dirname(filepath), function (err) {
-			if (err) {
-				callback(err);
-			} else {
-				fs.writeFile(filepath, content, callback);
-			}
-		});
-	}
+    fs.readFile(lessFile, function (err, buffer) {
+      var content = buffer.toString(),
+        options = readOptions(content),
+        lessPath = path.dirname(lessFile),
+        cssFilename, cssFile;
 
-	// compile the given less file
-	function compile(lessFile, callback) {
-		var dir;
+      // main is set: compile the referenced file instead
+      if (options.main) {
+        lessFile = path.resolve(lessPath, options.main);
+        return compile(lessFile, callback);
+      }
 
-		// read the less file, returns object with the following keys:
-		// - content: content of the file
-		// - out: override output filename (optional)
-		// - main: override compile file (optional)
-		// - options: compiler options (optional)
-		readLessFile(lessFile, function (err, result) {
-			if (err) {
-				callback(err);
-				return;
-			}
+      // out is null or false: do not compile
+      if (options.out === null || options.out === false) {
+        return callback();
+      }
 
-			// compile a different file instead
-			if (result.options.main) {
-				compile(path.join(path.dirname(lessFile), result.options.main), callback);
-				return;
-			}
+      // out is set: output to the given file name
+      if (options.out) {
+        cssFilename = options.out;
+        if (path.extname(cssFilename) === '') {
+          cssFilename += '.css';
+        }
+        delete options.out;
+      } else {
+        cssFilename = path.basename(lessFile);
+        cssFilename = cssFilename.substr(0, cssFilename.length - path.extname(cssFilename).length) + '.css';
+      }
+      cssFile = path.resolve(lessPath, cssFilename);
 
-			// determine output filename
-			var parser, parserOptions, cssFile, sourceMapFilename, lessPath = path.dirname(lessFile);
-			if (result.options.out === null || result.options.out === false) {
-				callback();
-				return;
-			} else if (result.options.out) {
-				cssFile = path.resolve(lessPath, result.options.out);
-				if (path.extname(cssFile) === '') {
-					cssFile += '.css';
-				}
-			} else {
-				cssFile = lessFile.substr(0, lessFile.length - 5) + '.css';
-			}
+      // source map file name and url
+      if (options.sourceMap) {
+        if (!options.sourceMapFilename) {
+          options.sourceMapFilename = cssFilename + '.map';
+        }
+        if (!options.sourceMapBasepath) {
+          options.sourceMapBasepath = lessPath;
+        }
+        options.writeSourceMap = function (sourceMap) {
+          mkfile(path.resolve(path.dirname(cssFile), options.sourceMapFilename), sourceMap, function (err) {
+            if (err) {
+              console.error('Error writing source mape:', err);
+            }
+          });
+        };
+      }
 
-			// source map file
-			if (result.options.sourceMapFilename) {
-				sourceMapFilename = path.resolve(lessPath, result.options.sourceMapFilename);
-				if (sourceMapFilename === cssFile) {
-					sourceMapFilename += '.map';
-				}
-			} else {
-				sourceMapFilename = cssFile + '.map';
-			}
+      // set the path
+      options.paths = [lessPath];
+      options.filename = lessFile;
+      // options.rootpath = lessPath;
 
-			// chdir
-			dir = process.cwd();
-			process.chdir(lessPath);
+      // set up the parser
+      render(content, options, function (err, css) {
+        if (err) {
+          console.error(err);
+          return callback(err);
+        }
 
-			// create less parser
-			parserOptions = pick(result.options, lessOptionKeys.parser);
-			parserOptions.filename = path.basename(lessFile);
-			parser = new less.Parser(parserOptions);
+        // add version tag
+        if (!options.compress && !options.cleanCss) {
+          css = '/* Generated by less ' + less.version.join('.') + ' */\n' + css;
+        }
 
-			// parse the file
-			parser.parse(result.content, function (err, tree) {
-				if (err) {
-					callback(err);
-					return;
-				}
+        // write output
+        mkfile(cssFile, css, function (err) {
+          if (err) {
+            return callback(err);
+          }
+          callback(null, { filepath: cssFile, output: css });
+        });
 
-				var output = result.options.compress ? '' : '/* Generated by less ' + less.version.join('.') + ' */\n',
-					renderOptions = pick(result.options, lessOptionKeys.render),
-					appendToOutput = '';
-				renderOptions.writeSourceMap = function (sourceMap) {
-					var relativePath = path.relative(path.dirname(cssFile), sourceMapFilename);
-					appendToOutput = '/*# sourceMappingURL=' + relativePath + ' */';
-					mkfile(sourceMapFilename, sourceMap, function (err) {
-						if (err) {
-							console.error(err);
-						}
-					});
-				};
-				try {
-					output += tree.toCSS(renderOptions);
-				} catch (err) {
-					process.chdir(dir);
-					callback(err);
-					return;
-				}
-				process.chdir(dir);
+      });
+    });
 
-				// write css output
-				output += appendToOutput;
-				mkfile(cssFile, output, function (err) {
-					if (err) {
-						callback(err);
-					} else {
-						callback(null, { filepath: cssFile, output: output });
-					}
-				});
-			});
-		});
-	}
+  }
 
-	// set up service for brackets
-	function init(DomainManager) {
-		if (!DomainManager.hasDomain('LessCompiler')) {
-			DomainManager.registerDomain('LessCompiler', {
-				major: 1,
-				minor: 0
-			});
-		}
-		DomainManager.registerCommand(
-			'LessCompiler', // domain name
-			'compile', // command name
-			compile, // command handler function
-			true, // this command is asynchronous
-			'Compiles a less file', ['lessPath'], // path parameters
-			null);
-	}
+  // set up service for brackets
+  function init(DomainManager) {
+    if (!DomainManager.hasDomain('LessCompiler')) {
+      DomainManager.registerDomain('LessCompiler', { major: 1, minor: 0 });
+    }
+    DomainManager.registerCommand(
+      'LessCompiler', // domain name
+      'compile', // command name
+      compile, // command handler function
+      true, // this command is asynchronous
+      'Compiles a less file', ['lessPath'], // path parameters
+      null);
+  }
 
-	exports.init = init;
+  exports.init = init;
 
 }());
