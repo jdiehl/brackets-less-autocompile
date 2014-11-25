@@ -51,11 +51,8 @@ define(function (require, exports, module) {
       } catch (e) {
         err = e;
       }
-      if (err) {
-        // reject with error if not parsable
-        deferred.reject({ pos: {}, message: 'Invalid project compile settings: ' + err ? err.message : '' });
-      } else if (!(files instanceof Array)) {
-        deferred.reject({ pos: {}, message: 'Invalid project compile settings' });
+      if (err || !(files instanceof Array)) {
+        deferred.resolve([documentPath]);
       } else {
         // or: read file entries
         files.forEach(function (file, i) {

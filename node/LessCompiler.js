@@ -104,7 +104,7 @@
         options.writeSourceMap = function (sourceMap) {
           mkfile(path.resolve(path.dirname(cssFile), options.sourceMapFilename), sourceMap, function (err) {
             if (err) {
-              console.error('Error writing source mape:', err);
+              console.error('Error writing source map:', err);
             }
           });
         };
@@ -118,7 +118,6 @@
       // set up the parser
       render(content, options, function (err, css) {
         if (err) {
-          console.error(err);
           return callback(err);
         }
 
