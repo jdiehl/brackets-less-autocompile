@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Node script for jdiehl.less-autocompile",
   "dependencies": {
-    "less": "^1.7.5",
+    "less": "^2.1.1",
     "mkpath": "^0.1.0"
   }
 }

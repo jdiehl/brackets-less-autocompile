@@ -31,25 +31,6 @@
     return options;
   }
 
-  // less render
-  function render(content, options, callback) {
-    console.log('render', options);
-    var css, parser = new less.Parser(options);
-    parser.parse(content, function (err, tree) {
-      if (err) {
-        return callback(err);
-      }
-
-      try {
-        css = tree.toCSS(options);
-      } catch (err) {
-        return callback(err);
-      }
-
-      callback(null, css);
-    });
-  }
-
   // makes a file in a path where directories may or may not have existed before
   function mkfile(filepath, content, callback) {
     mkpath(path.dirname(filepath), function (err) {
@@ -95,19 +76,24 @@
 
       // source map file name and url
       if (options.sourceMap) {
-        if (!options.sourceMapFilename) {
-          options.sourceMapFilename = cssFilename + '.map';
+        options.sourceMap = {};
+        options.sourceMap.sourceMapURL = options.sourceMapURL;
+        options.sourceMap.sourceMapBasepath = options.sourceMapBasepath || lessPath;
+        options.sourceMap.sourceMapRootpath = options.sourceMapRootpath;
+        options.sourceMap.outputSourceFiles = options.outputSourceFiles;
+        options.sourceMap.sourceMapFileInline = options.sourceMapFileInline;
+        if (options.sourceMapFileInline) {
+          options.sourceMap.sourceMapFileInline = true;
+        } else {
+          if (options.sourceMapFilename) {
+            path.resolve(lessPath, options.sourceMapFilename);
+          } else {
+            options.sourceMapFilename = cssFile + '.map';
+          }
+          if (!options.sourceMap.sourceMapURL) {
+            options.sourceMap.sourceMapURL = path.relative(cssFile + path.sep + '..', options.sourceMapFilename);
+          }
         }
-        if (!options.sourceMapBasepath) {
-          options.sourceMapBasepath = lessPath;
-        }
-        options.writeSourceMap = function (sourceMap) {
-          mkfile(path.resolve(path.dirname(cssFile), options.sourceMapFilename), sourceMap, function (err) {
-            if (err) {
-              console.error('Error writing source map:', err);
-            }
-          });
-        };
       }
 
       // set the path
@@ -116,10 +102,9 @@
       // options.rootpath = lessPath;
 
       // set up the parser
-      render(content, options, function (err, css) {
-        if (err) {
-          return callback(err);
-        }
+      less.render(content, options).then(function (output) {
+      console.log('[LESS]', output);
+        var css = output.css;
 
         // add version tag
         if (!options.compress && !options.cleanCss) {
@@ -131,10 +116,21 @@
           if (err) {
             return callback(err);
           }
-          callback(null, { filepath: cssFile, output: css });
-        });
 
+          // write source map
+          if (output.map && options.sourceMapFilename) {
+            mkfile(options.sourceMapFilename, output.map, function (err) {
+              if (err) {
+                return callback(err);
+              }
+              callback(null, { filepath: cssFile, output: css });
+            });
+          } else {
+            callback(null, { filepath: cssFile, output: css });
+          }
       });
+
+      }, callback);
     });
 
   }
