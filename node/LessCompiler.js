@@ -86,7 +86,7 @@
           options.sourceMap.sourceMapFileInline = true;
         } else {
           if (options.sourceMapFilename) {
-            path.resolve(lessPath, options.sourceMapFilename);
+            options.sourceMapFilename = path.resolve(lessPath, options.sourceMapFilename);
           } else {
             options.sourceMapFilename = cssFile + '.map';
           }
