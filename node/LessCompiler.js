@@ -45,6 +45,10 @@
   function compile(lessFile, callback) {
 
     fs.readFile(lessFile, function (err, buffer) {
+      if (err) {
+        return callback(err);
+      }
+
       var content = buffer.toString(),
         options = readOptions(content),
         lessPath = path.dirname(lessFile),
