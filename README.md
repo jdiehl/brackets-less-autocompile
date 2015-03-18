@@ -21,6 +21,8 @@ The following compile options are available:
 * compress: compress the css output
 * strictMath: require brackets around math expressions
 * sourceMap: generate a source map
+* autoprefixer: use [autoprefixer](https://github.com/postcss/autoprefixer) (value is passed as browsers to the autoprefixer-plugin)
+* cleancss: use [clean-css](https://github.com/jakubpawlowicz/clean-css) (value is passed as compatibility to the cleancss-plugin - not compatible with source-maps)
 
 Other less compiler options might also work but are untested at this point. See [Grunt LESS](https://github.com/gruntjs/grunt-contrib-less#options) for a complete list of possible options.
 
@@ -62,7 +64,7 @@ How can I supress the compilation of a single less file
 * Thanks to [Dimitar S.](https://github.com/deemeetar) for allowing users to specify a custom output path.
 * Thanks to [FezVrasta](https://github.com/FezVrasta) for tweaking the less compiler settings.
 * Thanks to [Kenneth Ruddick](https://github.com/KenRud) for the compile.json configuration addition.
-
+* Thanks to [Florian Fida](https://github.com/piccaso) for kicking off autoprefixer and cleancss support.
 
 ### License
 The MIT License (MIT)

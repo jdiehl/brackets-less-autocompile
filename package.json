@@ -3,7 +3,7 @@
   "title": "LESS AutoCompile",
   "description": "Automatically compiles less files upon saving.",
   "homepage": "https://github.com/jdiehl/brackets-less-autocompile",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "author": {
     "name": "Jonathan diehl",
     "url": "https://github.com/jdiehl"
@@ -13,13 +13,11 @@
     "Martin Zagora (https://github.com/zaggino)",
     "Dimitar S. (https://github.com/deemeetar)",
     "Fez Vrasta (https://github.com/FezVrasta)",
-    "Kenneth Ruddick (https://github.com/KenRud)"
+    "Kenneth Ruddick (https://github.com/KenRud)",
+    "Florian Fida (https://github.com/piccaso)"
   ],
   "license": "MIT",
   "engines": {
     "brackets": ">=0.31.0"
-  },
-  "dependencies": {
-    "less-plugin-clean-css": "^1.2.0"
   }
 }
