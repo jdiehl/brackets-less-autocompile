@@ -74,6 +74,7 @@ define(function (require, exports, module) {
   }
 
   function convertError(error) {
+    if(typeof error === 'string') return { pos: {}, message: error };
     switch (error.code) {
     case 'EACCES':
     case 'ENOENT':
