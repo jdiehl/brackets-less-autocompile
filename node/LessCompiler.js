@@ -11,7 +11,7 @@
     var firstLine = content.substr(0, content.indexOf('\n')),
       match = /^\s*\/\/\s*(.+)/.exec(firstLine),
       options = {};
-    
+
     if (!match) {
       return options;
     }
@@ -107,7 +107,7 @@
 
       // set up the parser
       less.render(content, options).then(function (output) {
-      console.log('[LESS]', output);
+        console.log('[LESS]', output);
         var css = output.css;
 
         // add version tag
@@ -132,7 +132,7 @@
           } else {
             callback(null, { filepath: cssFile, output: css });
           }
-      });
+        });
 
       }, callback);
     });

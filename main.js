@@ -38,7 +38,7 @@ define(function (require, exports, module) {
   function loadFilesToCompile(documentPath) {
     var projectPath = ProjectManager.getProjectRoot().fullPath,
       deferred = $.Deferred();
-  
+
     // read the config file
     loadProjectConfig(function (text) {
       if (!text) {
