@@ -1,15 +1,15 @@
 /*jshint node: true, evil: true */
 'use strict';
 
-var less = require('less'),
-  path = require('path'),
-  fs = require('fs'),
-  mkpath = require('mkpath');
+var less = require('less');
+var path = require('path');
+var fs = require('fs');
+var mkpath = require('mkpath');
 
 function readOptions(content) {
-  var firstLine = content.substr(0, content.indexOf('\n')),
-    match = /^\s*\/\/\s*(.+)/.exec(firstLine),
-    options = {};
+  var firstLine = content.substr(0, content.indexOf('\n'));
+  var match = /^\s*\/\/\s*(.+)/.exec(firstLine);
+  var options = {};
 
   if (!match) {
     return options;
@@ -48,10 +48,11 @@ function compile(lessFile, callback) {
       return callback(err);
     }
 
-    var content = buffer.toString(),
-      options = readOptions(content),
-      lessPath = path.dirname(lessFile),
-      cssFilename, cssFile;
+    var content = buffer.toString();
+    var options = readOptions(content);
+    var lessPath = path.dirname(lessFile);
+    var cssFilename;
+    var cssFile;
 
     // main is set: compile the referenced file instead
     if (options.main) {
@@ -106,7 +107,6 @@ function compile(lessFile, callback) {
 
     // set up the parser
     less.render(content, options).then(function (output) {
-      console.log('[LESS]', output);
       var css = output.css;
 
       // add version tag
