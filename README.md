@@ -21,7 +21,7 @@ The following compile options are available:
 * compress: compress the css output
 * strictMath: require brackets around math expressions
 * sourceMap: generate a source map
-* autoprefixer: use [autoprefixer](https://github.com/postcss/autoprefixer) (value is passed as browsers to the autoprefixer-plugin, separate multiple entires with a space character)
+* autoprefixer: use [autoprefixer](https://github.com/postcss/autoprefixer) (value is passed as browsers to the autoprefixer-plugin, separate multiple entires with a `;` character)
 * cleancss: use [clean-css](https://github.com/jakubpawlowicz/clean-css) (value is passed as compatibility to the cleancss-plugin - not compatible with source-maps)
 
 Other less compiler options might also work but are untested at this point. See [Grunt LESS](https://github.com/gruntjs/grunt-contrib-less#options) for a complete list of possible options.

@@ -115,7 +115,7 @@ function compile(lessFile, callback) {
     if (options.autoprefixer) {
       var autoprefixerOptions = {};
       if (typeof options.autoprefixer === 'string') {
-        autoprefixerOptions.browsers = options.autoprefixer.split(/\s+/);
+        autoprefixerOptions.browsers = options.autoprefixer.split(';');
       }
       options.plugins.push(new LessPluginAutoPrefix(autoprefixerOptions));
     }
