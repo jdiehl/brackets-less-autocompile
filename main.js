@@ -32,43 +32,47 @@ define(function (require, exports, module) {
     });
   }
 
-  // Compile the files listed in the compile config file.
-  // Defaults to 'compile.json' in the root of project.
+  // Loads a compilation config file in the root of project.
+  // Defualts to 'compile.json' and '.brackets.json'
   // If no compilation config found, defaults to normal behavior.
-  function loadFilesToCompile(documentPath) {
+  function loadOptions(documentPath) {
     var projectPath = ProjectManager.getProjectRoot().fullPath,
       deferred = $.Deferred();
 
     // read the config file
     loadProjectConfig(function (text) {
+      var options, 
+        err,
+        defaults = { less: [documentPath] };
+
       if (!text) {
-        deferred.resolve([documentPath]);
+        deferred.resolve(defaults);
       }
-      var files, err;
       try {
         // try to parse it
-        files = JSON.parse(text).less;
+        // defaults to the document path if not overridden
+        options = JSON.parse(text);
       } catch (e) {
         err = e;
       }
-      if (err || !(files instanceof Array)) {
-        deferred.resolve([documentPath]);
-      } else {
+	  // if JSON has been parsed and it contains an array of less files
+      if (!err && options.less && (options.less instanceof Array)) {
         // or: read file entries
-        files.forEach(function (file, i) {
-          files[i] = projectPath + file;
-        });
-        deferred.resolve(files);
+        options.less.forEach(function (file, i) {
+          options.less[i] = projectPath + file;
+        });        
       }
+	  options = $.extend({}, defaults, options);
+      deferred.resolve(options);
     });
     return deferred;
   }
 
   // use the given compiler to compile the given files
-  function compile(compiler, files) {
+  function compile(compiler, options) {
     var tasks = [];
-    files.forEach(function (file) {
-      tasks.push(compiler.compile(file));
+    options.less.forEach(function (file) {
+      tasks.push(compiler.compile(file, options));
     });
     return $.when.apply($, tasks);
   }
@@ -91,11 +95,11 @@ define(function (require, exports, module) {
   function compileLess(content, documentPath) {
     var deferred = new $.Deferred(),
       connection = connectToNodeModule('LessCompiler'),
-      files = loadFilesToCompile(documentPath);
+      options = loadOptions(documentPath);
 
     // connect to the node server & read the file
-    $.when(connection, files).then(function (compiler, files) {
-      compile(compiler, files).then(function () {
+    $.when(connection, options).then(function (compiler, options) {		
+      compile(compiler, options).then(function () {
         deferred.resolve();
       }, function (error) {
         deferred.resolve({ errors: [convertError(error)] });
