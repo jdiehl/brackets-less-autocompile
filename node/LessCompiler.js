@@ -52,7 +52,7 @@ function compile(lessFile, defaults, callback) {
     }
 
     var content = buffer.toString();
-    var options = extend(defaults, readOptions(content));
+    var options = extend(extend({}, defaults), readOptions(content));
     var lessPath = path.dirname(lessFile);
     var cssFilename;
     var cssFile;
@@ -60,8 +60,8 @@ function compile(lessFile, defaults, callback) {
     // main is set: compile the referenced file instead
     if (options.main) {
       lessFile = path.resolve(lessPath, options.main);
-      return compile(lessFile, callback);
-    }
+      return compile(lessFile, defaults, callback);
+    } 
 
     // out is null or false: do not compile
     if (options.out === null || options.out === false) {
