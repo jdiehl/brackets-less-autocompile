@@ -7,7 +7,7 @@ var LessPluginCleanCSS = require('less-plugin-clean-css');
 var path = require('path');
 var fs = require('fs');
 var mkpath = require('mkpath');
-var extend = require('extend');
+var extend = require('util')._extend;
 
 function readOptions(content) {
   var firstLine = content.substr(0, content.indexOf('\n'));
@@ -52,7 +52,7 @@ function compile(lessFile, defaults, callback) {
     }
 
     var content = buffer.toString();
-    var options = extend({}, defaults, readOptions(content));
+    var options = extend(defaults, readOptions(content));
     var lessPath = path.dirname(lessFile);
     var cssFilename;
     var cssFile;
