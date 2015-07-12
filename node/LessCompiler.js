@@ -7,6 +7,7 @@ var LessPluginCleanCSS = require('less-plugin-clean-css');
 var path = require('path');
 var fs = require('fs');
 var mkpath = require('mkpath');
+var extend = require('util')._extend;
 
 function readOptions(content) {
   var firstLine = content.substr(0, content.indexOf('\n'));
@@ -43,15 +44,15 @@ function mkfile(filepath, content, callback) {
 }
 
 // compile the given less file
-function compile(lessFile, callback) {
-
+function compile(lessFile, defaults, callback) {
+    
   fs.readFile(lessFile, function (err, buffer) {
     if (err) {
       return callback(err);
     }
 
     var content = buffer.toString();
-    var options = readOptions(content);
+    var options = extend(extend({}, defaults), readOptions(content));
     var lessPath = path.dirname(lessFile);
     var cssFilename;
     var cssFile;
@@ -59,8 +60,8 @@ function compile(lessFile, callback) {
     // main is set: compile the referenced file instead
     if (options.main) {
       lessFile = path.resolve(lessPath, options.main);
-      return compile(lessFile, callback);
-    }
+      return compile(lessFile, defaults, callback);
+    } 
 
     // out is null or false: do not compile
     if (options.out === null || options.out === false) {
