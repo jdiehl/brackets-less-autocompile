@@ -41,7 +41,7 @@ define(function (require, exports, module) {
 
     // read the config file
     loadProjectConfig(function (text) {
-      var options, 
+      var options,
         err,
         defaults = { less: [documentPath] };
 
@@ -55,14 +55,14 @@ define(function (require, exports, module) {
       } catch (e) {
         err = e;
       }
-	  // if JSON has been parsed and it contains an array of less files
+      // if JSON has been parsed and it contains an array of less files
       if (!err && options.less && (options.less instanceof Array)) {
         // or: read file entries
         options.less.forEach(function (file, i) {
           options.less[i] = projectPath + file;
-        });        
+        });
       }
-	  options = $.extend({}, defaults, options);
+      options = $.extend({}, defaults, options);
       deferred.resolve(options);
     });
     return deferred;
@@ -78,7 +78,9 @@ define(function (require, exports, module) {
   }
 
   function convertError(error) {
-    if(typeof error === 'string') return { pos: {}, message: error };
+    if (typeof error === 'string') {
+      return { pos: {}, message: error };
+    }
     switch (error.code) {
     case 'EACCES':
     case 'ENOENT':
@@ -98,7 +100,7 @@ define(function (require, exports, module) {
       options = loadOptions(documentPath);
 
     // connect to the node server & read the file
-    $.when(connection, options).then(function (compiler, options) {		
+    $.when(connection, options).then(function (compiler, options) {
       compile(compiler, options).then(function () {
         deferred.resolve();
       }, function (error) {

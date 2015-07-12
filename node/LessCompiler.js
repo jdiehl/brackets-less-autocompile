@@ -45,7 +45,7 @@ function mkfile(filepath, content, callback) {
 
 // compile the given less file
 function compile(lessFile, defaults, callback) {
-    
+
   fs.readFile(lessFile, function (err, buffer) {
     if (err) {
       return callback(err);
@@ -61,7 +61,7 @@ function compile(lessFile, defaults, callback) {
     if (options.main) {
       lessFile = path.resolve(lessPath, options.main);
       return compile(lessFile, defaults, callback);
-    } 
+    }
 
     // out is null or false: do not compile
     if (options.out === null || options.out === false) {
