@@ -1,13 +1,13 @@
 /*jshint node: true, evil: true */
 'use strict';
 
+var path = require('path');
+var fs = require('fs');
+var extend = require('util')._extend;
 var less = require('less');
 var LessPluginAutoPrefix = require('less-plugin-autoprefix');
 var LessPluginCleanCSS = require('less-plugin-clean-css');
-var path = require('path');
-var fs = require('fs');
 var mkpath = require('mkpath');
-var extend = require('util')._extend;
 
 function readOptions(content) {
   var firstLine = content.substr(0, content.indexOf('\n'));
