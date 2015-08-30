@@ -7,6 +7,14 @@ LESS AutoCompile is an extension for the code editor Brackets that adds automati
 
 LESS AutoCompile is installed from the Brackets Extension Manager. Please restart Brackets after installing the extension.
 
+### Manual Installation
+
+0. Install [NodeJS](https://nodejs.org)
+1. Find your extension folder: Choose Help > Show Extensions Folder (or open it manually)
+2. Drill down to the user folder
+3. Check out the extension from GitHub into the user folder
+4. Run `npm i` in the root folder of the extension
+5. Run `npm i` in the node folder of the extension
 
 ### Compile Options
 
