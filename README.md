@@ -47,6 +47,14 @@ All file paths must be relative to the project's root folder. To disable less-au
 
 ### FAQ
 
+What should I do if files are not compiled?
+
+> 1. Make sure "Lint Files on Save" is enabled.
+> 2. Make sure the file compiles using less on the command line.
+> 3. Check the Brackets developer console and the node console for any errors.
+> 
+> If you cannot resolve the problem by yourself post an issue here and include the files you are trying to compile and the output of both consoles.
+
 How can I redirect the output to a separate file?
 
 > Add the following line to the head of your less file:
