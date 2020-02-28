@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Node script for jdiehl.less-autocompile",
   "dependencies": {
-    "less": "^3.10.3",
+    "@wikimedia/less-plugin-clean-css": "^1.5.2",
+    "less": "^3.11.1",
     "less-plugin-autoprefix": "^2.0.0",
-    "less-plugin-clean-css": "^1.5.1",
     "mkpath": "^1.0.0",
-    "npm-check-updates": "^4.0.1"
+    "npm-check-updates": "^4.0.2"
   }
 }
