@@ -6,7 +6,7 @@ var fs = require('fs');
 var extend = require('util')._extend;
 var less = require('less');
 var LessPluginAutoPrefix = require('less-plugin-autoprefix');
-var LessPluginCleanCSS = require('less-plugin-clean-css');
+var LessPluginCleanCSS = require('@wikimedia/less-plugin-clean-css');
 var mkpath = require('mkpath');
 
 function readOptions(content) {

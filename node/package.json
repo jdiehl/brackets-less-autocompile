@@ -6,7 +6,6 @@
     "@wikimedia/less-plugin-clean-css": "^1.5.2",
     "less": "^3.11.1",
     "less-plugin-autoprefix": "^2.0.0",
-    "mkpath": "^1.0.0",
-    "npm-check-updates": "^4.0.2"
+    "mkpath": "^1.0.0"
   }
 }
